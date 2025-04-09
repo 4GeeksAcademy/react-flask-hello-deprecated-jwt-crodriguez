@@ -10,6 +10,10 @@ from api.models import db
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
+from flask_jwt_extended import JWTManager
+from flask_cors import CORS
+
+
 
 # from models import Person
 
@@ -17,6 +21,11 @@ ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(
     os.path.realpath(__file__)), '../public/')
 app = Flask(__name__)
+CORS(app, resources={r"/*": {
+    "origins": "*",                       # Permitir todos los orígenes
+    "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],  # Permitir todos estos métodos
+    "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"]  # Headers permitidos
+}})
 app.url_map.strict_slashes = False
 
 # database condiguration
@@ -30,6 +39,9 @@ else:
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 MIGRATE = Migrate(app, db, compare_type=True)
 db.init_app(app)
+
+app.config["JWT_SECRET_KEY"] = "super-secret"  # Change this!
+jwt = JWTManager(app)
 
 # add the admin
 setup_admin(app)
